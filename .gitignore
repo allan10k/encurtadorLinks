@@ -1,0 +1,15 @@
+# Ambiente Virtual
+venv/
+.venv/
+
+# Arquivos de Cache do Python
+__pycache__/
+*.pyc
+
+# Banco de dados
+database.db
+instance/
+
+# Uploads temporários
+temp_uploads/
+static/uploads/
