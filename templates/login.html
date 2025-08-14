@@ -1,0 +1,86 @@
+<!-- templates/login.html - VERSÃO COM LAYOUT DE DUAS COLUNAS E MOSTRAR/ESCONDER SENHA -->
+{% extends "base.html" %}
+
+{% block title %}Login - Encurtador de Links{% endblock %}
+
+{% block content %}
+<div class="container-fluid ps-md-0">
+  <div class="row g-0">
+    <!-- Coluna da Imagem (Esquerda) - Escondida em telas pequenas -->
+    <div class="d-none d-md-flex col-md-4 col-lg-6 bg-image"></div>
+    
+    <!-- Coluna do Formulário (Direita) -->
+    <div class="col-md-8 col-lg-6">
+      <div class="login d-flex align-items-center py-5">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-9 col-lg-8 mx-auto">
+              
+              <!-- Logo da Prefeitura -->
+              <div class="text-center mb-4">
+                <img src="{{ url_for('static', filename='images/logo_prefeitura_colorido.png') }}" alt="Logo Prefeitura" style="max-width: 150px; height: auto;">
+              </div>
+
+              <h3 class="login-heading mb-4 text-center">Acessar Painel</h3>
+              
+              <!-- Bloco de Mensagens Flash -->
+              <!-- Movido para cá para ficar dentro da coluna do formulário -->
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
+
+              <!-- Formulário de Login -->
+              <form method="POST" action="{{ url_for('login') }}">
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="username" name="username" placeholder="Usuário" required>
+                  <label for="username">Usuário</label>
+                </div>
+                
+                <!-- NOVO: Campo de Senha com Ícone -->
+                <div class="input-group mb-3">
+                  <div class="form-floating">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Senha" required>
+                    <label for="password">Senha</label>
+                  </div>
+                  <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                    <i class="bi bi-eye-slash"></i>
+                  </button>
+                </div>
+
+                <div class="d-grid">
+                  <button class="btn btn-lg btn-primary btn-login text-uppercase fw-bold mb-2" type="submit">Acessar Painel</button>
+                </div>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    const icon = togglePassword.querySelector('i');
+
+    togglePassword.addEventListener('click', function (e) {
+        // Alterna o tipo do input entre 'password' e 'text'
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        // Alterna o ícone do olho
+        icon.classList.toggle('bi-eye');
+        icon.classList.toggle('bi-eye-slash');
+    });
+});
+</script>
+{% endblock %}

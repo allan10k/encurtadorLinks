@@ -1,0 +1,105 @@
+/* static/style.css - VERSÃO COM NOVA PALETA DE CORES E TIPOGRAFIA */
+
+/* 1. Definição das Variáveis de Cor e Fonte */
+:root {
+    --cor-primaria: #95243D; /* Vermelho institucional */
+    --cor-secundaria: #339A80; /* Verde institucional */
+    --font-principal: 'Inter', sans-serif;
+}
+
+/* 2. Aplicação da Fonte e Estilos Globais */
+body {
+    font-family: var(--font-principal);
+    background-color: #f8f9fa; /* Um cinza muito claro para o fundo */
+}
+
+/* 3. Sobrescrevendo as Cores Padrão do Bootstrap */
+.bg-primary {
+    background-color: var(--cor-primaria) !important;
+}
+
+.btn-primary {
+    background-color: var(--cor-primaria);
+    border-color: var(--cor-primaria);
+}
+
+.btn-primary:hover {
+    background-color: #7c1d32; /* Um tom um pouco mais escuro para o hover */
+    border-color: #7c1d32;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-success {
+    background-color: var(--cor-secundaria);
+    border-color: var(--cor-secundaria);
+}
+
+.btn-success:hover {
+    background-color: #2a8169;
+    border-color: #2a8169;
+}
+
+.btn-outline-primary {
+    border-color: var(--cor-primaria);
+    color: var(--cor-primaria);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--cor-primaria);
+    color: white;
+}
+
+.alert-success {
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+    color: #0f5132;
+}
+
+/* 4. Ajustes Finos de Layout */
+.original-url-cell {
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9em;
+}
+
+.flash-messages-container {
+    position: fixed;
+    top: 80px; /* Abaixo da navbar */
+    right: 20px;
+    z-index: 1050; /* Para ficar acima de outros elementos */
+    width: auto;
+    max-width: 400px;
+}
+
+/* --- ESTILOS PARA A PÁGINA DE LOGIN --- */
+
+.login {
+  min-height: 100vh;
+}
+
+.bg-image {
+  /* Lembre-se de colocar a imagem em static/images/background_login.jpg */
+  background-image: url('/static/images/background_login.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.login-heading {
+  font-weight: 300;
+}
+
+/* Ajuste para o botão do olho não quebrar o layout */
+#togglePassword {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+#password {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}

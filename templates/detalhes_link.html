@@ -1,0 +1,74 @@
+<!-- templates/detalhes_link.html - VERSÃO COM BOTÕES DE EXPORTAÇÃO -->
+{% extends "base.html" %}
+
+{% block title %}Detalhes do Link{% endblock %}
+
+{% block content %}
+
+<!-- Div para alinhar o título e os botões -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Detalhes do Link</h1>
+    <!-- Grupo de botões de exportação -->
+    <div class="btn-group">
+        <a href="{{ url_for('export_csv', link_id=link.id) }}" class="btn btn-success">
+            Exportar para CSV
+        </a>
+        <a href="{{ url_for('export_pdf', link_id=link.id) }}" class="btn btn-danger">
+            Exportar para PDF
+        </a>
+    </div>
+</div>
+
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Informações Gerais</h5>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <strong>Link Original:</strong> <a href="{{ link.original_url }}" target="_blank">{{ link.original_url }}</a>
+            </li>
+            <li class="list-group-item">
+                <strong>Link Encurtado:</strong> <a href="{{ request.host_url }}{{ link.short_code }}" target="_blank">{{ request.host_url }}{{ link.short_code }}</a>
+            </li>
+            <li class="list-group-item">
+                <strong>Total de Cliques:</strong> {{ link.clicks }}
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        Registro de Cliques
+    </div>
+    <div class="card-body">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Data e Hora (UTC)</th>
+                    <th>Endereço IP</th>
+                    <th>Navegador (User Agent)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clique in cliques %}
+                <tr>
+                    <td>{{ clique.timestamp|datetime_brt }}</td>
+                    <td>{{ clique.ip_address }}</td>
+                    <td class="small">{{ clique.user_agent }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center">Este link ainda não recebeu nenhum clique.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Voltar ao Painel Principal</a>
+</div>
+
+{% endblock %}

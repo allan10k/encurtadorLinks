@@ -1,0 +1,257 @@
+<!-- templates/index.html - VERSÃO COM ORDENAÇÃO E RESTRIÇÃO DE EXCLUSÃO -->
+{% extends "base.html" %}
+
+{% block title %}Painel - Encurtador{% endblock %}
+
+{% block content %}
+
+
+<!-- Formulário para criar novo link -->
+<div class="card mb-4">
+    <div class="card-header">
+        Encurtar um novo link
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('encurtar_link') }}">
+            <div class="mb-3">
+                <label for="url_original" class="form-label">URL Original</label>
+                <input type="url" class="form-control" id="url_original" name="url_original" placeholder="https://exemplo.com/pagina-longa" required>
+            </div>
+            <div class="mb-3">
+                <label for="codigo_personalizado" class="form-label">Código Personalizado (Opcional)</label>
+                <input type="text" class="form-control" id="codigo_personalizado" name="codigo_personalizado" placeholder="ex: campanha-natal">
+                <div class="form-text">Use apenas letras, números e hifens. Se deixado em branco, um código aleatório será gerado.</div>
+            </div>
+            <div class="mb-3">
+                <label for="data_expiracao" class="form-label">Data e Hora de Expiração (Opcional)</label>
+                <input type="datetime-local" class="form-control" id="data_expiracao" name="data_expiracao">
+                <div class="form-text">O link deixará de funcionar após esta data e hora.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Encurtar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela com os links já criados -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Links Globais</span>
+        <div class="btn-group btn-group-sm">
+            <a href="{{ url_for('index', sort_by='data') }}" class="btn {% if sort_by == 'data' %}btn-primary{% else %}btn-outline-primary{% endif %}">Ordenar por Data</a>
+            <a href="{{ url_for('index', sort_by='cliques') }}" class="btn {% if sort_by == 'cliques' %}btn-primary{% else %}btn-outline-primary{% endif %}">Ordenar por Cliques</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Link Original</th>
+                    <th>Link Encurtado</th>
+                    <th>Cliques</th>
+                    <th>Criador</th>
+                    <th>Expira em</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for link in links %}
+                <tr>
+                    <td class="original-url-cell" title="{{ link.original_url }}">{{ link.original_url[:70] }}{% if link.original_url|length > 70 %}...{% endif %}</td>
+                    <td><a href="{{ request.host_url }}{{ link.short_code }}" target="_blank">{{ request.host_url.replace("http://", "").replace("https://", "") }}{{ link.short_code }}</a></td>
+                    <td>{{ link.clicks }}</td>
+                    <td>{{ link.creator.username }}</td>
+                    <td>
+                        {% if link.expires_at %}
+                        {{ link.expires_at.strftime('%d/%m/%Y %H:%M') }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-dark me-1" data-bs-toggle="modal" data-bs-target="#qrCodeModal" data-link-id="{{ link.id }}">
+                            QRCode
+                        </button>
+                        <a href="{{ url_for('detalhes_link', link_id=link.id) }}" class="btn btn-sm btn-secondary me-1">Detalhes</a>
+                        {% if current_user.id == link.user_id or current_user.role == 'admin' %}
+                        <a href="{{ url_for('editar_link', link_id=link.id) }}" class="btn btn-sm btn-info me-1">Editar</a>
+                        {% endif %}
+                        {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('deletar_link', link_id=link.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja deletar este link?');">Deletar</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center">Nenhum link foi criado ainda.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL PARA O QR CODE -->
+<div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="qrCodeModalLabel">Gerar QR Code</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="qrCodeForm" enctype="multipart/form-data">
+          <input type="hidden" id="modalLinkId" name="link_id">
+          
+          <!-- SEÇÃO DE LOGO -->
+          <h6>Logo</h6>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="logo_option" id="logo_none" value="none" checked>
+            <label class="form-check-label" for="logo_none">Sem Logo</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="logo_option" id="logo_default" value="default">
+            <label class="form-check-label" for="logo_default">Usar Logo da Prefeitura</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="logo_option" id="logo_custom" value="custom">
+            <label class="form-check-label" for="logo_custom">Adicionar outro logo</label>
+          </div>
+          <div class="mt-2" id="customLogoUpload" style="display: none;">
+            <input class="form-control" type="file" id="custom_logo_input" name="custom_logo">
+          </div>
+          <hr>
+
+          <!-- SEÇÃO DE OPÇÕES AVANÇADAS -->
+          <h6>Opções Avançadas</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="box_size" class="form-label">Tamanho do Pixel</label>
+              <input type="number" class="form-control" id="box_size" name="box_size" value="10" min="1">
+              <div class="form-text">Controla a nitidez/resolução.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="border" class="form-label">Espessura da Borda</label>
+              <input type="number" class="form-control" id="border" name="border" value="4" min="0">
+              <div class="form-text">Espaço em branco ao redor.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="error_correction" class="form-label">Correção de Erros</label>
+              <select class="form-select" id="error_correction" name="error_correction">
+                <option value="L">Baixa (L)</option>
+                <option value="M">Média (M)</option>
+                <option value="Q">Quartil (Q)</option>
+                <option value="H" selected>Alta (H)</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="version" class="form-label">Tamanho do Código</label>
+              <input type="number" class="form-control" id="version" name="version" value="1" min="1" max="40">
+               <div class="form-text">Valores maiores para URLs longas.</div>
+            </div>
+          </div>
+          <hr>
+          
+          <button type="submit" class="btn btn-primary w-100">Gerar QR Code</button>
+        </form>
+        <div id="qrCodeResult" class="text-center mt-3" style="display: none;">
+          <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display: none;">
+            <span class="visually-hidden">Gerando...</span>
+          </div>
+          <img id="qrCodeImage" src="" alt="QR Code Gerado" class="img-fluid mb-3">
+          <div id="exportButtons" class="btn-group" role="group">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const qrCodeModal = document.getElementById('qrCodeModal');
+    const qrCodeForm = document.getElementById('qrCodeForm');
+    const modalLinkIdInput = document.getElementById('modalLinkId');
+    const customLogoUploadDiv = document.getElementById('customLogoUpload');
+    const qrCodeResult = document.getElementById('qrCodeResult');
+    const qrCodeImage = document.getElementById('qrCodeImage');
+    const exportButtonsDiv = document.getElementById('exportButtons');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+
+    qrCodeForm.addEventListener('change', function(e) {
+        if (e.target.name === 'logo_option') {
+            customLogoUploadDiv.style.display = (e.target.value === 'custom') ? 'block' : 'none';
+        }
+    });
+
+    qrCodeModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const linkId = button.getAttribute('data-link-id');
+        modalLinkIdInput.value = linkId;
+        qrCodeForm.reset(); // Reseta o formulário, mas os valores padrão permanecem
+        document.getElementById('error_correction').value = 'H'; // Garante que a opção H seja a padrão
+        qrCodeResult.style.display = 'none';
+        loadingSpinner.style.display = 'none';
+        qrCodeImage.src = '';
+        qrCodeImage.style.display = 'none';
+        customLogoUploadDiv.style.display = 'none';
+        exportButtonsDiv.innerHTML = '';
+    });
+
+    qrCodeForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        loadingSpinner.style.display = 'block';
+        qrCodeResult.style.display = 'block';
+        qrCodeImage.style.display = 'none';
+        exportButtonsDiv.style.display = 'none';
+
+        const linkId = modalLinkIdInput.value;
+        const formData = new FormData(qrCodeForm);
+
+        fetch(`/qrcode/generate/${linkId}`, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) { throw new Error('A resposta da rede não foi OK'); }
+            return response.json();
+        })
+        .then(data => {
+            loadingSpinner.style.display = 'none';
+            if (data.error) {
+                alert('Erro: ' + data.error);
+                return;
+            }
+
+            qrCodeImage.src = data.qr_code_data_uri;
+            qrCodeImage.style.display = 'block';
+
+            // SOLUÇÃO PARA O PROBLEMA 1: Constrói os links de exportação com os parâmetros corretos
+            const params = new URLSearchParams();
+            params.append('version', formData.get('version'));
+            params.append('error_correction', formData.get('error_correction'));
+            params.append('box_size', formData.get('box_size'));
+            params.append('border', formData.get('border'));
+            params.append('logo', data.logo_used);
+            if (data.logo_used === 'custom' && data.custom_logo_filename) {
+                params.append('custom_logo', data.custom_logo_filename);
+            }
+            const queryString = params.toString();
+
+            exportButtonsDiv.innerHTML = `
+                <a href="/qrcode/export/png/${linkId}?${queryString}" class="btn btn-outline-primary" download>PNG</a>
+                <a href="/qrcode/export/jpeg/${linkId}?${queryString}" class="btn btn-outline-primary" download>JPEG</a>
+                <a href="/qrcode/export/svg/${linkId}?${queryString}" class="btn btn-outline-primary" download>SVG</a>
+                <a href="/qrcode/export/pdf/${linkId}?${queryString}" class="btn btn-outline-primary" download>PDF</a>
+            `;
+            exportButtonsDiv.style.display = 'inline-flex';
+        })
+        .catch(error => {
+            loadingSpinner.style.display = 'none';
+            alert('Ocorreu um erro ao gerar o QR Code. Verifique o console para mais detalhes.');
+            console.error('Error:', error);
+        });
+    });
+});
+</script>
+{% endblock %}

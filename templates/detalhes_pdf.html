@@ -1,0 +1,49 @@
+<!-- templates/detalhes_pdf.html - NOVO ARQUIVO -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Relatório de Cliques</title>
+    <style>
+        body { font-family: sans-serif; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .small { font-size: 0.8em; }
+    </style>
+  </head>
+  <body>
+    <h1>Relatório de Cliques</h1>
+    
+    <h2>Link: {{ request.host_url }}{{ link.short_code }}</h2>
+    <p><strong>URL Original:</strong> {{ link.original_url }}</p>
+    <p><strong>Total de Cliques:</strong> {{ link.clicks }}</p>
+    
+    <hr>
+    
+    <h2>Registros</h2>
+    <table>
+      <thead>
+        <tr>
+            <th>Data e Hora (UTC)</th>
+            <th>Endereço IP</th>
+            <th>Navegador (User Agent)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for clique in cliques %}
+        <tr>
+            <td>{{ clique.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+            <td>{{ clique.ip_address }}</td>
+            <td class="small">{{ clique.user_agent }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="3">Nenhum clique registrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

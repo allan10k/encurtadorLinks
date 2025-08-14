@@ -1,0 +1,42 @@
+<!-- templates/editar_link.html - VERSÃO CORRIGIDA -->
+{% extends "base.html" %}
+
+{% block title %}Editar Link{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">Editar Link</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('editar_link', link_id=link.id) }}">
+                    <div class="mb-3">
+                        <label class="form-label">URL Original (não pode ser alterada)</label>
+                        <input type="text" class="form-control" value="{{ link.original_url }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigo_personalizado" class="form-label">Código Encurtado</label>
+                        <input type="text" class="form-control" id="codigo_personalizado" name="codigo_personalizado" value="{{ link.short_code }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data_expiracao" class="form-label">Data e Hora de Expiração (Opcional)</label>
+                        <input type="datetime-local" class="form-control" id="data_expiracao" name="data_expiracao" value="{{ link.expires_at|datetime_brt('%Y-%m-%dT%H:%M') if link.expires_at }}">
+                        <div class="form-text">Deixe em branco para que o link nunca expire.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

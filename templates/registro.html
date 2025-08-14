@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - Encurtador{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <h1 class="text-center mb-4">Criar Nova Conta</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('registro') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nome de Usuário</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">Registrar</button>
+                    </div>
+                </form>
+            </div>
+             <div class="card-footer text-center">
+                <a href="{{ url_for('login') }}">Já tem uma conta? Faça o login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
