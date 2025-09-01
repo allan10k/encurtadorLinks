@@ -6,29 +6,34 @@
 {% block content %}
 
 
-<!-- Formulário para criar novo link -->
-<div class="card mb-4">
-    <div class="card-header">
-        Encurtar um novo link
-    </div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('encurtar_link') }}">
-            <div class="mb-3">
-                <label for="url_original" class="form-label">URL Original</label>
-                <input type="url" class="form-control" id="url_original" name="url_original" placeholder="https://exemplo.com/pagina-longa" required>
+<div class="accordion mb-4" id="accordionEncurtar">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                <i class="bi bi-plus-circle-fill me-2"></i> Encurtar um novo link
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionEncurtar">
+            <div class="accordion-body">
+                <form method="POST" action="{{ url_for('encurtar_link') }}">
+                    <div class="mb-3">
+                        <label for="url_original" class="form-label">URL Original</label>
+                        <input type="url" class="form-control" id="url_original" name="url_original" placeholder="https://exemplo.com/pagina-longa" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigo_personalizado" class="form-label">Código Personalizado (Opcional)</label>
+                        <input type="text" class="form-control" id="codigo_personalizado" name="codigo_personalizado" placeholder="ex: campanha-natal">
+                        <div class="form-text">Use apenas letras, números e hifens. Se deixado em branco, um código aleatório será gerado.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data_expiracao" class="form-label">Data e Hora de Expiração (Opcional)</label>
+                        <input type="datetime-local" class="form-control" id="data_expiracao" name="data_expiracao">
+                        <div class="form-text">O link deixará de funcionar após esta data e hora.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Encurtar</button>
+                </form>
             </div>
-            <div class="mb-3">
-                <label for="codigo_personalizado" class="form-label">Código Personalizado (Opcional)</label>
-                <input type="text" class="form-control" id="codigo_personalizado" name="codigo_personalizado" placeholder="ex: campanha-natal">
-                <div class="form-text">Use apenas letras, números e hifens. Se deixado em branco, um código aleatório será gerado.</div>
-            </div>
-            <div class="mb-3">
-                <label for="data_expiracao" class="form-label">Data e Hora de Expiração (Opcional)</label>
-                <input type="datetime-local" class="form-control" id="data_expiracao" name="data_expiracao">
-                <div class="form-text">O link deixará de funcionar após esta data e hora.</div>
-            </div>
-            <button type="submit" class="btn btn-primary">Encurtar</button>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -68,16 +73,38 @@
                         {% endif %}
                     </td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-dark me-1" data-bs-toggle="modal" data-bs-target="#qrCodeModal" data-link-id="{{ link.id }}">
-                            QRCode
-                        </button>
-                        <a href="{{ url_for('detalhes_link', link_id=link.id) }}" class="btn btn-sm btn-secondary me-1">Detalhes</a>
-                        {% if current_user.id == link.user_id or current_user.role == 'admin' %}
-                        <a href="{{ url_for('editar_link', link_id=link.id) }}" class="btn btn-sm btn-info me-1">Editar</a>
-                        {% endif %}
-                        {% if current_user.role == 'admin' %}
-                        <a href="{{ url_for('deletar_link', link_id=link.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja deletar este link?');">Deletar</a>
-                        {% endif %}
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton-{{ link.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ link.id }}">
+                                <li>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#qrCodeModal" data-link-id="{{ link.id }}">
+                                        <i class="bi bi-qr-code me-2"></i>Gerar QR Code
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('detalhes_link', link_id=link.id) }}">
+                                        <i class="bi bi-card-list me-2"></i>Ver Detalhes
+                                    </a>
+                                </li>
+                                {% if current_user.id == link.user_id or current_user.role == 'admin' %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('editar_link', link_id=link.id) }}">
+                                        <i class="bi bi-pencil-square me-2"></i>Editar
+                                    </a>
+                                </li>
+                                {% endif %}
+                                {% if current_user.role == 'admin' %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('deletar_link', link_id=link.id) }}" onclick="return confirm('Tem certeza que deseja deletar este link?');">
+                                        <i class="bi bi-trash-fill me-2"></i>Deletar
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
                     </td>
                 </tr>
                 {% else %}
